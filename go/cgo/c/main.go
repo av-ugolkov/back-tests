@@ -8,6 +8,6 @@ import (
 
 func main() {
 	fmt.Println("sum c")
-	ss := sum.Sum(5, 2)
+	ss := sum.Sum(5, 9)
 	fmt.Println(ss)
 }
