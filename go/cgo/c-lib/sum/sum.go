@@ -1,8 +1,7 @@
 package sum
 
-//#cgo CFLAGS: -Isrc
+//#cgo LDFLAGS: -L${SRCDIR}/ -lsum -Wl,-rpath=${SRCDIR}/
 //#include "sum.h"
-//#include "src/sum.c"
 import "C"
 
 func Sum(a, b int) int {
