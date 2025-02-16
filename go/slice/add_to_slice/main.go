@@ -5,7 +5,7 @@ import "fmt"
 func main() {
 	sl := make([]int, 0, 4)
 	sl = append(sl, 1, 2, 3)
-	addToSlice(sl)
+	sl = addToSlice(sl)
 	fmt.Println(sl)
 }
 
