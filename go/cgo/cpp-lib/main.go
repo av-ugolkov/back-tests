@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/av-ugolkov/backend-examples/go/cgo/cpp/sum"
+	"github.com/av-ugolkov/backend-examples/go/cgo/cpp-lib/sum"
 )
 
 func main() {
