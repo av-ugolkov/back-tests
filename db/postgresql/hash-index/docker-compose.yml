@@ -11,4 +11,4 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     volumes:
-      - /var/lib/postgresql/examples/data:/var/lib/postgresql/data
+      - /var/lib/postgresql/hash-index/data:/var/lib/postgresql/data
