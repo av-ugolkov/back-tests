@@ -22,6 +22,15 @@ func New(filename string) (TransactionLogger, error) {
 	return &FileTransactionLogger{file: file}, nil
 }
 
+func (l *FileTransactionLogger) Close() error {
+	err := l.file.Close()
+	if err != nil {
+		return fmt.Errorf("cannot close transaction log file: %w", err)
+	}
+
+	return nil
+}
+
 func (l *FileTransactionLogger) Run() {
 	events := make(chan Event, 16)
 	l.events = events

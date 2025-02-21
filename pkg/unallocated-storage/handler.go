@@ -2,16 +2,23 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 
-	"github.com/av-ugolkov/backend-examples/unallocated-storage/core"
+	transactionlogger "github.com/av-ugolkov/backend-examples/pkg/transaction-logger"
+	"github.com/av-ugolkov/backend-examples/pkg/unallocated-storage/core"
 
 	"github.com/gorilla/mux"
 )
 
 func Init() {
+	err := initializeTransactionLog()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/v1/{key}", keyValuePutHandler).Methods("PUT")
@@ -19,6 +26,37 @@ func Init() {
 	r.HandleFunc("/v1/{key}", keyValueDeleteHandler).Methods("DELETE")
 
 	log.Fatal(http.ListenAndServe(":8080", r))
+}
+
+var logger transactionlogger.TransactionLogger
+
+func initializeTransactionLog() error {
+	var err error
+
+	logger, err = transactionlogger.New("transaction.log")
+	if err != nil {
+		return fmt.Errorf("failed to create event logger: %w", err)
+	}
+
+	chEvents, chErrors := logger.ReadEvents()
+	e, ok := transactionlogger.Event{}, true
+
+	for ok && err == nil {
+		select {
+		case err, ok = <-chErrors:
+		case e, ok = <-chEvents:
+			switch e.EventType {
+			case transactionlogger.EventDelete:
+				err = core.Delete(e.Key)
+			case transactionlogger.EventPut:
+				err = core.Put(e.Key, e.Value)
+			}
+		}
+	}
+
+	logger.Run()
+
+	return err
 }
 
 func keyValuePutHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +75,8 @@ func keyValuePutHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	logger.WritePut(key, string(value))
 
 	w.WriteHeader(http.StatusCreated)
 }
@@ -67,6 +107,8 @@ func keyValueDeleteHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	logger.WriteDelete(key)
 
 	w.WriteHeader(http.StatusOK)
 }
