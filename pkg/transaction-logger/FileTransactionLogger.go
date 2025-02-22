@@ -13,7 +13,7 @@ type FileTransactionLogger struct {
 	file         *os.File
 }
 
-func New(filename string) (TransactionLogger, error) {
+func NewFileLogger(filename string) (TransactionLogger, error) {
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("cannot open transaction log file: %w", err)

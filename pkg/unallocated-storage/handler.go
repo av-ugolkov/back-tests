@@ -33,7 +33,7 @@ var logger transactionlogger.TransactionLogger
 func initializeTransactionLog() error {
 	var err error
 
-	logger, err = transactionlogger.New("transaction.log")
+	logger, err = transactionlogger.NewFileLogger("transaction.log")
 	if err != nil {
 		return fmt.Errorf("failed to create event logger: %w", err)
 	}
