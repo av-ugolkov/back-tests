@@ -6,6 +6,7 @@ require (
 	github.com/gin-contrib/cors v1.7.3
 	github.com/gin-gonic/gin v1.10.0
 	github.com/gorilla/mux v1.8.1
+	github.com/maxence-charriere/go-app/v10 v10.0.10
 	github.com/stretchr/testify v1.10.0
 	gorm.io/gorm v1.25.12
 )
@@ -30,7 +31,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/maxence-charriere/go-app/v10 v10.0.10 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
