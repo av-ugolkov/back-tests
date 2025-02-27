@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"log"
+	"sync"
 )
 
 var ErrorNoSuchKey = errors.New("no such key")
@@ -10,6 +11,7 @@ var ErrorNoSuchKey = errors.New("no such key")
 type KeyValueStore struct {
 	m        map[string]string
 	transact TransactionLogger
+	sync.RWMutex
 }
 
 func NewKeyValueStore(tl TransactionLogger) *KeyValueStore {
@@ -20,6 +22,9 @@ func NewKeyValueStore(tl TransactionLogger) *KeyValueStore {
 }
 
 func (s *KeyValueStore) Get(key string) (string, error) {
+	s.RLock()
+	defer s.RUnlock()
+
 	value, ok := s.m[key]
 
 	if !ok {
@@ -30,14 +35,19 @@ func (s *KeyValueStore) Get(key string) (string, error) {
 }
 
 func (s *KeyValueStore) Put(key string, value string) error {
+	s.Lock()
 	s.m[key] = value
+	s.Unlock()
+
 	s.transact.WritePut(key, value)
 
 	return nil
 }
 
 func (s *KeyValueStore) Delete(key string) error {
+	s.Lock()
 	delete(s.m, key)
+	s.Unlock()
 	s.transact.WriteDelete(key)
 
 	return nil
