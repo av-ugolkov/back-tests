@@ -1,14 +1,16 @@
-FROM golang:1.24 as build
+FROM golang:1.24.0-alpine3.21 as build
 
-COPY . /app
-WORKDIR /app
+WORKDIR /build
+COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o example
+RUN go mod init motel
+RUN go mod tidy
+RUN CGO_ENABLED=0 go build -o main
 
 FROM scratch as image
 
-COPY --from=build /app/example .
+COPY --from=build /build/main .
 
 EXPOSE 2222
 
-CMD ["/example"]
+CMD ["/main"]

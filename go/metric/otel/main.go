@@ -51,8 +51,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Println("Browse to localhost:3000?n=6")
-
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/", http.HandlerFunc(fibHandler))
 
