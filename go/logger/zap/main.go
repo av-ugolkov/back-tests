@@ -27,9 +27,6 @@ func init() {
 
 func main() {
 	for i := 1; i <= 10; i++ {
-		zap.S().Infow(
-			"Testing sampling",
-			"index", i,
-		)
+		zap.S().Infow("Testing sampling", "index", i)
 	}
 }
