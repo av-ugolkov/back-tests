@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
@@ -66,6 +67,7 @@ func newHTTPHandler() http.Handler {
 
 	handleFunc("/rolldice/", rolldice)
 	handleFunc("rolldice/{player}", rolldice)
+	mux.Handle("/metrics", promhttp.Handler())
 
 	handler := otelhttp.NewHandler(mux, "/")
 	return handler

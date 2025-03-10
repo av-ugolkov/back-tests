@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -34,6 +35,8 @@ func init() {
 }
 
 func rolldice(w http.ResponseWriter, r *http.Request) {
+	timer := prometheus.NewTimer(responseDuration)
+	defer timer.ObserveDuration()
 	ctx, span := tracer.Start(r.Context(), "roll")
 	defer span.End()
 
@@ -50,6 +53,7 @@ func rolldice(w http.ResponseWriter, r *http.Request) {
 	rollValueAttr := attribute.Int("roll.value", roll)
 	span.SetAttributes(rollValueAttr)
 	rollCnt.Add(ctx, 1, metric.WithAttributes(rollValueAttr))
+	requestCount.Inc()
 
 	resp := strconv.Itoa(roll) + "\n"
 	if _, err := io.WriteString(w, resp); err != nil {
