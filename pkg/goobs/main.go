@@ -32,6 +32,9 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerHello(c *fiber.Ctx) error {
+	prom.Gauge.Add(1)
+	defer prom.Gauge.Sub(1)
+
 	timer := prometheus.NewTimer(prom.RequestDurations)
 	defer timer.ObserveDuration()
 

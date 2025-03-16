@@ -15,6 +15,11 @@ var (
 		Name: "goobs_request_total",
 		Help: "A counter for the total number of requests received.",
 	})
+
+	Gauge = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "goobs_gauge",
+		Help: "A gauge for the current value of the gauge.",
+	})
 )
 
 func New() *prometheus.Registry {
