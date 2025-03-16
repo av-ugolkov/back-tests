@@ -5,15 +5,21 @@ import (
 )
 
 var (
-	requestDurations = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name: "goobs_request_duration_seconds",
-		Help: "A histogram of the HTTP request durations in seconds.",
+	RequestDurations = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Name:    "goobs_request_duration_seconds",
+		Help:    "A histogram of the HTTP request durations in seconds.",
+		Buckets: prometheus.DefBuckets,
+	})
+
+	RequestTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "goobs_request_total",
+		Help: "A counter for the total number of requests received.",
 	})
 )
 
 func New() *prometheus.Registry {
 	registry := prometheus.NewRegistry()
-	registry.MustRegister(requestDurations)
+	registry.MustRegister(RequestDurations, RequestTotal)
 
 	return registry
 }
