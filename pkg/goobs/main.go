@@ -20,7 +20,7 @@ func main() {
 	router.Get("/hello/:name", handlerHello)
 	router.Get("/metrics", adaptor.HTTPHandlerFunc(metricsHandler))
 
-	router.Listen(":3000")
+	router.Listen(":8080")
 }
 
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
