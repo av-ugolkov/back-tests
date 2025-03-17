@@ -1,25 +1,30 @@
 services:
-  grafana:
-    image: grafana/grafana-oss:latest
-    ports:
-      - '3000:3000'
-    depends_on:
-      - goobs
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-    networks:
-      - goobs-network
-
   goobs:
     build: .
     container_name: goobs
     ports:
       - '8080:8080'
-    networks:
-      - goobs-network
 
-networks:
-  goobs-network:
-    name: goobs-network
-    # external: true
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-oss:latest
+    ports:
+      - '3000:3000'
+    depends_on:
+      - goobs
+      - prometheus
+    volumes:
+      - './configs/grafana/:/etc/grafana/provisioning/'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - goobs
