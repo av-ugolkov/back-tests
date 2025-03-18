@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: leetcode
+      POSTGRES_PASSWORD: leetcode
+      POSTGRES_DB: leetcode
+    ports:
+      - '5432:5432'
