@@ -56,8 +56,9 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerHello(c *fiber.Ctx) error {
-	_, span := otracer.Start(context.Background(), "hello-handler")
+	ctx, span := otracer.Start(context.Background(), "hello-handler")
 	defer span.End()
+	span.SetAttributes(attribute.String("time", time.Now().Format(time.DateTime)))
 
 	prom.Gauge.Add(1)
 	defer prom.Gauge.Sub(1)
@@ -79,7 +80,7 @@ func handlerHello(c *fiber.Ctx) error {
 	span.SetAttributes(attribute.String("params", name))
 
 	prom.RequestTotal.Inc()
-	svc.SomeAction(context.Background(), span, name)
+	svc.SomeAction(ctx, name)
 
 	msg := fmt.Sprintf("Hello, %s!", name)
 
