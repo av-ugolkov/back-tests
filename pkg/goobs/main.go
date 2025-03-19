@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"goobs/prom"
+	"goobs/service"
 	"goobs/tracer"
 
 	"github.com/gofiber/fiber/v2"
@@ -21,6 +22,7 @@ import (
 )
 
 var otracer trace.Tracer
+var svc *service.Service
 
 func main() {
 	ctx := context.Background()
@@ -31,6 +33,8 @@ func main() {
 	}
 	defer func() { _ = tp.Shutdown(context.Background()) }()
 	otracer = otel.Tracer("goobs-tracer")
+
+	svc = service.New()
 
 	router := fiber.New()
 	router.Get("/hello", handlerHello)
@@ -52,11 +56,17 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerHello(c *fiber.Ctx) error {
+	_, span := otracer.Start(context.Background(), "hello-handler")
+	defer span.End()
+
 	prom.Gauge.Add(1)
 	defer prom.Gauge.Sub(1)
 
 	timer := prometheus.NewTimer(prom.RequestDurations)
 	defer timer.ObserveDuration()
+
+	span.AddEvent("start handler")
+	defer span.AddEvent("finish handler")
 
 	roll := 1 + rand.Intn(1000)
 	time.Sleep(time.Duration(roll) * time.Millisecond)
@@ -66,11 +76,12 @@ func handlerHello(c *fiber.Ctx) error {
 		name = "Unknown"
 	}
 
-	_, span := otracer.Start(context.Background(), "hello-handler")
 	span.SetAttributes(attribute.String("params", name))
-	defer span.End()
 
 	prom.RequestTotal.Inc()
+	svc.SomeAction(context.Background(), span, name)
+
 	msg := fmt.Sprintf("Hello, %s!", name)
+
 	return c.SendString(msg)
 }
