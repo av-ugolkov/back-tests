@@ -1,20 +1,37 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
 
 	"goobs/prom"
+	"goobs/tracer"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
+var otracer trace.Tracer
+
 func main() {
+	ctx := context.Background()
+
+	tp, err := tracer.InitTracer(ctx)
+	if err != nil {
+		log.Fatalf("Error init Jaeger: %v", err)
+	}
+	defer func() { _ = tp.Shutdown(context.Background()) }()
+	otracer = otel.Tracer("goobs-tracer")
+
 	router := fiber.New()
 	router.Get("/hello", handlerHello)
 	router.Get("/hello/:name", handlerHello)
@@ -24,6 +41,9 @@ func main() {
 }
 
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
+	_, span := otracer.Start(context.Background(), "metrics-handler")
+	defer span.End()
+
 	promhttp.HandlerFor(prom.New(),
 		promhttp.HandlerOpts{
 			EnableOpenMetrics: true,
@@ -45,6 +65,10 @@ func handlerHello(c *fiber.Ctx) error {
 	if name == "" {
 		name = "Unknown"
 	}
+
+	_, span := otracer.Start(context.Background(), "hello-handler")
+	span.SetAttributes(attribute.String("params", name))
+	defer span.End()
 
 	prom.RequestTotal.Inc()
 	msg := fmt.Sprintf("Hello, %s!", name)
