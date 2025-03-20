@@ -16,36 +16,41 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/adaptor"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
-var otracer trace.Tracer
+var trHandler trace.Tracer
 var svc *service.Service
 
 func main() {
 	ctx := context.Background()
 
-	tp, err := tracer.InitTracer(ctx)
+	tr, err := tracer.InitTracer(ctx, "goobs-router")
 	if err != nil {
 		log.Fatalf("Error init Jaeger: %v", err)
 	}
-	defer func() { _ = tp.Shutdown(context.Background()) }()
-	otracer = otel.Tracer("goobs-tracer")
+	defer func() { _ = tr.Shutdown(context.Background()) }()
+	trHandler = tr.Tracer("goobs-tracer-handler")
 
-	svc = service.New()
+	svc = service.New(trHandler)
 
 	router := fiber.New()
+
 	router.Get("/hello", handlerHello)
 	router.Get("/hello/:name", handlerHello)
-	router.Get("/metrics", adaptor.HTTPHandlerFunc(metricsHandler))
+	router.Get("/metrics", adaptor.HTTPHandler(otelhttp.NewHandler(
+		otelhttp.WithRouteTag("/metrics", http.HandlerFunc(metricsHandler)),
+		"/metrics",
+		otelhttp.WithTracerProvider(tr))))
 
 	router.Listen(":8080")
 }
 
 func metricsHandler(w http.ResponseWriter, r *http.Request) {
-	_, span := otracer.Start(context.Background(), "metrics-handler")
+	_, span := trHandler.Start(context.Background(), "metrics-handler")
 	defer span.End()
 
 	promhttp.HandlerFor(prom.New(),
@@ -56,7 +61,7 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerHello(c *fiber.Ctx) error {
-	ctx, span := otracer.Start(context.Background(), "hello-handler")
+	ctx, span := trHandler.Start(c.Context(), "hello-handler")
 	defer span.End()
 	span.SetAttributes(attribute.String("time", time.Now().Format(time.DateTime)))
 
@@ -80,7 +85,13 @@ func handlerHello(c *fiber.Ctx) error {
 	span.SetAttributes(attribute.String("params", name))
 
 	prom.RequestTotal.Inc()
-	svc.SomeAction(ctx, name)
+
+	propagator := propagation.TraceContext{}
+	mp := make(map[string]string, 1)
+	mp[name] = name
+	propagator.Inject(ctx, propagation.MapCarrier(mp))
+
+	svc.SomeAction(ctx, name, mp)
 
 	msg := fmt.Sprintf("Hello, %s!", name)
 
