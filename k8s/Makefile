@@ -1,3 +1,3 @@
 .PHONY: build.docker
 build.docker:
-	docker build . -t app:v1
+	docker build . -f deploy/Dockerfile -t app:v1
