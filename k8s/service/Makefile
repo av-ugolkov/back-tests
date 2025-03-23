@@ -2,6 +2,10 @@
 docker.build:
 	docker build . -f deploy/Dockerfile -t app:v1
 
+.PHONY: minikube.start
+minikube.start:
+	minikube start -p goapp --driver=docker --extra-config=apiserver.service-node-port-range=1000-10000
+
 .PHONY: minikube.load
 minikube.build:
 	minikube image load app:v1
@@ -9,6 +13,10 @@ minikube.build:
 .PHONY: minikube.build
 minikube.build:
 	minikube image build . -t app:v1 -f deploy/Dockerfile
+
+.PHONY: minikube.tunnel
+minikube.tunnel:
+	minikube service goapp-svc --url
 
 .PHONY: k8s.apply
 k8s.apply:
