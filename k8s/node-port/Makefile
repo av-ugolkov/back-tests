@@ -7,7 +7,7 @@ minikube.start:
 	minikube start -p goapp --driver=docker --extra-config=apiserver.service-node-port-range=1000-50000
 
 .PHONY: minikube.load
-minikube.build:
+minikube.load:
 	minikube -p goapp image load app:v1
 
 .PHONY: minikube.build
