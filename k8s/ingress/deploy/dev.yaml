@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: develop
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: goapp-dep
+  namespace: develop
+  labels:
+    app: goapp
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: goapp
+  template:
+    metadata:
+      labels:
+        app: goapp
+    spec:
+      containers:
+      - name: web
+        image: app:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5858
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goapp-svc
+  namespace: develop
+spec:
+  selector:
+    app: goapp
+  ports:
+  - protocol: TCP
+    port: 5858
+    targetPort: 5858
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: goapp-ingress
+  namespace: develop
+spec:
+  rules:
+    - host: goapp.example.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: goapp-svc
+                port:
+                  number: 80
