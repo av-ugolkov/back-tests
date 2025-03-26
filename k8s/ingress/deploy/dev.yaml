@@ -29,6 +29,11 @@ spec:
       - name: web
         image: app:v1
         imagePullPolicy: Never
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
         ports:
         - containerPort: 5858
           protocol: TCP
@@ -43,7 +48,7 @@ spec:
     app: goapp
   ports:
   - protocol: TCP
-    port: 5858
+    port: 80
     targetPort: 5858
 ---
 apiVersion: networking.k8s.io/v1
@@ -53,7 +58,7 @@ metadata:
   namespace: develop
 spec:
   rules:
-    - host: goapp.example.com
+    - host: mini.service.test
       http:
         paths:
           - pathType: Prefix

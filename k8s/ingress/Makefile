@@ -4,24 +4,24 @@ docker.build:
 
 .PHONY: minikube.start
 minikube.start:
-	minikube start -p goapp --driver=docker --extra-config=apiserver.service-node-port-range=1000-50000
+	minikube start --driver=docker
 
 .PHONY: minikube.load
 minikube.load:
-	minikube -p goapp image load app:v1
+	minikube image load app:v1
 
 .PHONY: minikube.build
 minikube.build:
-	minikube -p goapp image build . -t app:v1 -f deploy/Dockerfile
+	minikube image build . -t app:v1 -f deploy/Dockerfile
+
+.PHONY: minikube.srv
+minikube.srv:
+	minikube -n develop service goapp-svc --url
 
 .PHONY: minikube.tunnel
 minikube.tunnel:
-	minikube -p goapp -n develop service goapp-svc --url
+	minikube tunnel
 
 .PHONY: k8s.apply
 k8s.apply:
 	kubectl apply -f deploy/dev.yaml
-
-.PHONY: k8s.forward
-k8s.forward:
-	kubectl -n develop port-forward service/goapp-svc 5858:80
