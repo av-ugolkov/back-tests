@@ -20,6 +20,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
+	router.SetTrustedProxies(nil) //show a real address by c.ClientIP()
 	router.GET("/", helloHandler)
 	router.GET("/hello/delay", helloDelayHandler)
 
