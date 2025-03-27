@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: goapp-manual
+  labels:
+    app: web-server
+spec:
+  containers:
+  - name: web-image
+    image: app:v2
+    imagePullPolicy: Never
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    ports:
+    - name: http
+      containerPort: 5858
+    - name: https
+      containerPort: 5858
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: goapp-manual-service
+spec:
+  selector:
+    app: web-server
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  - name: https
+    port: 443
+    targetPort: https
