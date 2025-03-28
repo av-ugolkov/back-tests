@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	// "github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -17,16 +16,6 @@ var podName string
 func main() {
 	podName = os.Getenv("POD_NAME")
 	fmt.Println("Pod Name:", podName)
-
-	// gin.SetMode(gin.ReleaseMode)
-	// router := gin.New()
-	// router.SetTrustedProxies(nil) //show a real address by c.ClientIP()
-	// router.GET("/", helloHandler)
-	// router.GET("/hello/delay", helloDelayHandler)
-	// err := http.ListenAndServe(":5858", router)
-	// if err != nil {
-	// 	fmt.Printf("listen error: %v", err)
-	// }
 
 	router := fiber.New()
 	router.Get("/", helloHandler)
@@ -38,27 +27,16 @@ func main() {
 	}
 }
 
-// func helloHandler(c *gin.Context) {
 func helloHandler(c *fiber.Ctx) error {
-	// name := c.DefaultQuery("name", "Guest")
-	// slog.Info(fmt.Sprintf("Welcom %s on the pod %s! (%s)", name, podName, c.ClientIP()))
-	// c.String(http.StatusOK, "Welcom %s on the pod %s! (%s)", name, podName, c.ClientIP())
-
 	name := c.Query("name", "Guest")
 	s := fmt.Sprintf("Welcom %s on the pod %s! (%s)-(%s)", name, podName, c.Context().LocalIP(), c.Context().RemoteIP())
 	slog.Info(s)
 	return c.Status(http.StatusOK).SendString(s)
 }
 
-// func helloDelayHandler(c *gin.Context) {
 func helloDelayHandler(c *fiber.Ctx) error {
 	delay := rand.Intn(1000)
 	time.Sleep(time.Duration(delay) * time.Millisecond)
-
-	// name := c.DefaultQuery("name", "Guest")
-
-	// slog.Info(fmt.Sprintf("Welcom %s on the pod %s! (%d ms) (%s)", name, podName, delay, c.ClientIP()))
-	// c.String(http.StatusOK, "Welcom %s on the pod %s! (%d ms) (%s)", name, podName, delay, c.ClientIP())
 
 	name := c.Query("name", "Guest")
 	s := fmt.Sprintf("Welcom %s on the pod %s! (%d ms) (%s)-(%s)", name, podName, delay, c.Context().LocalIP(), c.Context().RemoteIP())
