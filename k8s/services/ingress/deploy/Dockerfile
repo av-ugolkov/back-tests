@@ -6,7 +6,9 @@ COPY . .
 
 RUN go build -o main
 
-FROM scratch
+FROM alpine:3.21
+
+RUN apk add curl
 
 COPY --from=builder /build/main /main
 

@@ -32,8 +32,8 @@ func main() {
 
 func helloHandler(c *gin.Context) {
 	name := c.DefaultQuery("name", "Guest")
-	slog.Info(fmt.Sprintf("Welcom %s on the pod %s! (%s)", name, podName, c.ClientIP()))
-	c.String(http.StatusOK, "Welcom %s on the pod %s! (%s)", name, podName, c.ClientIP())
+	s := fmt.Sprintf("Welcom %s on the pod %s! (%s)", name, podName, c.RemoteIP())
+	c.String(http.StatusOK, s)
 }
 
 func helloDelayHandler(c *gin.Context) {
@@ -42,6 +42,7 @@ func helloDelayHandler(c *gin.Context) {
 	delay := rand.Intn(1000)
 	time.Sleep(time.Duration(delay) * time.Millisecond)
 
-	slog.Info(fmt.Sprintf("Welcom %s on the pod %s! (%d ms) (%s)", name, podName, delay, c.ClientIP()))
-	c.String(http.StatusOK, "Welcom %s on the pod %s! (%d ms) (%s)", name, podName, delay, c.ClientIP())
+	s := fmt.Sprintf("Welcom %s on the pod %s! (%d ms) (%s)", name, podName, delay, c.RemoteIP())
+	slog.Info(s)
+	c.String(http.StatusOK, s)
 }

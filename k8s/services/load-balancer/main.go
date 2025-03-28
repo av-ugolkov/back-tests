@@ -34,7 +34,6 @@ func helloDelayHandler(c *gin.Context) {
 
 	delay := rand.Intn(1000)
 	time.Sleep(time.Duration(delay) * time.Millisecond)
-
 	slog.Info(fmt.Sprintf("helloDelayHandler: %s (%d ms)", name, delay))
 
 	c.String(http.StatusOK, "Hello %s! (%d ms)", name, delay)

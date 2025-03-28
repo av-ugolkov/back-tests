@@ -29,7 +29,7 @@ func main() {
 
 func helloHandler(c *fiber.Ctx) error {
 	name := c.Query("name", "Guest")
-	s := fmt.Sprintf("Welcom %s on the pod %s! (%s)-(%s)", name, podName, c.Context().LocalIP(), c.Context().RemoteIP())
+	s := fmt.Sprintf("Welcom %s on the pod %s! (%s)", name, podName, c.Context().LocalIP())
 	slog.Info(s)
 	return c.Status(http.StatusOK).SendString(s)
 }
@@ -39,7 +39,7 @@ func helloDelayHandler(c *fiber.Ctx) error {
 	time.Sleep(time.Duration(delay) * time.Millisecond)
 
 	name := c.Query("name", "Guest")
-	s := fmt.Sprintf("Welcom %s on the pod %s! (%d ms) (%s)-(%s)", name, podName, delay, c.Context().LocalIP(), c.Context().RemoteIP())
+	s := fmt.Sprintf("Welcom %s on the pod %s! (%d ms) (%s)", name, podName, delay, c.Context().LocalIP())
 	slog.Info(s)
 	return c.Status(http.StatusOK).SendString(s)
 }
