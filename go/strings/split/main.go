@@ -40,7 +40,6 @@ func index(str, sep string) []string {
 	count := strings.Count(str, sep)
 	res := make([]string, 0, count+1)
 
-	var before string
 	var ind int
 	for {
 		ind = strings.Index(str, sep)
@@ -48,8 +47,7 @@ func index(str, sep string) []string {
 			res = append(res, str)
 			break
 		}
-		before = str[:ind]
-		res = append(res, before)
+		res = append(res, str[:ind])
 		str = str[ind+1:]
 	}
 
