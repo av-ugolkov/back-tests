@@ -21,7 +21,6 @@ func main() {
 
 	go func() {
 		for n := 1; n <= 5; n++ {
-			ch1 <- n
 			ch1 <- n * 2
 			ch2 <- n
 			ch3 <- n
