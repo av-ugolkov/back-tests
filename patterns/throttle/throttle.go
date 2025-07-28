@@ -33,17 +33,16 @@ func Throttle[T ThrottleType](e Effector[T], max uint, refill uint, d time.Durat
 						return
 
 					case <-ticker.C:
-						t := tokens + refill
-						if t > max {
-							t = max
+						tokens = tokens + refill
+						if tokens > max {
+							tokens = max
 						}
-						tokens = t
 					}
 				}
 			}()
 		})
 		if tokens <= 0 {
-			return zero, fmt.Errorf("too make calls")
+			return zero, fmt.Errorf("too many calls")
 		}
 
 		tokens--
