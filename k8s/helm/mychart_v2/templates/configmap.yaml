@@ -7,8 +7,19 @@ data:
   {{- with .Values.favorite }}
   drink: {{ .drink | default "tea" | quote }}
   food: {{ .food | upper | quote }}
+  toppings: |-
+    {{- range $.Values.pizzaToppings }}
+    - {{ . | title | quote }}
+    {{- end }} 
+  toppings2: |-
+    {{- range $index, $topping := $.Values.pizzaToppings }}
+      {{ $index }}: {{ $topping }}
+    {{- end }}  
   {{- if eq .drink "coffee" }}
   mug: "true"
   {{- end }}
   release: {{ $.Release.Name }}
+  {{- end }}
+  {{- range $key, $val := .Values.favorite }}
+  {{ $key }}: {{ $val | quote }}
   {{- end }}
