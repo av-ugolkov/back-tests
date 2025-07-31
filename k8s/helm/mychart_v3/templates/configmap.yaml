@@ -8,3 +8,4 @@ data:
   {{- range $key, $val := .Values.favorite }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
+{{ include "mychart.app" . | indent 2}}
