@@ -83,10 +83,8 @@ func (c *lrucache[K, V]) All() iter.Seq2[K, V] {
 }
 
 func (c *lrucache[K, V]) Clear() {
-	for k, v := range c.keyToElement {
-		delete(c.keyToElement, k)
-		c.linkedList.Remove(v)
-	}
+	c.linkedList = list.New()
+	clear(c.keyToElement)
 }
 
 func (c *lrucache[K, V]) getNodeFromElement(element *list.Element) *node[K, V] {
@@ -101,6 +99,5 @@ func (c *lrucache[K, V]) getNodeFromElement(element *list.Element) *node[K, V] {
 func (c *lrucache[K, V]) extractLatest() {
 	del := c.linkedList.Back()
 	c.linkedList.Remove(del)
-
 	delete(c.keyToElement, c.getNodeFromElement(del).key)
 }
