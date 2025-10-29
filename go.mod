@@ -3,6 +3,7 @@ module github.com/av-ugolkov/backend-examples
 go 1.25.1
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.11.0
 	github.com/gofiber/fiber/v2 v2.52.9
