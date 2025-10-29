@@ -2,3 +2,6 @@ for_deleting/
 leet-code/
 temp/
 .vscode/
+.idea/
+
+pkg/kafka/volumes/*
