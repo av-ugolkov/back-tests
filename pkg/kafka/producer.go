@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -22,21 +21,17 @@ func NewKafkaProducer(conf *kafka.ConfigMap) *KafkaProducer {
 	}
 }
 
-func (p *KafkaProducer) Send(topic string, key []byte, value any) error {
-	b, err := json.Marshal(value)
-	if err != nil {
-		return err
-	}
-
+func (p *KafkaProducer) Send(topic string, key []byte, value []byte) error {
 	deliveryChan := make(chan kafka.Event, 1)
 	defer close(deliveryChan)
 
-	err = p.producer.Produce(&kafka.Message{
+	err := p.producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{
-			Topic: &topic,
+			Topic:     &topic,
+			Partition: kafka.PartitionAny,
 		},
 		Key:   key,
-		Value: b,
+		Value: value,
 	}, deliveryChan)
 	if err != nil {
 		return err
