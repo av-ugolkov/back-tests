@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -21,7 +22,7 @@ func NewKafkaProducer(conf *kafka.ConfigMap) *KafkaProducer {
 	}
 }
 
-func (p *KafkaProducer) Send(topic string, key []byte, value []byte) error {
+func (p *KafkaProducer) Send(topic string, key []byte, value []byte) (*kafka.Message, error) {
 	deliveryChan := make(chan kafka.Event, 1)
 	defer close(deliveryChan)
 
@@ -34,16 +35,21 @@ func (p *KafkaProducer) Send(topic string, key []byte, value []byte) error {
 		Value: value,
 	}, deliveryChan)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	event := <-deliveryChan
 	switch m := event.(type) {
 	case *kafka.Message:
-		fmt.Println(m)
+		fmt.Printf("Sender: key=%s value=%s topic=%s partition=%d offset=%d time=%v\n",
+			string(m.Key),
+			string(m.Value),
+			*m.TopicPartition.Topic,
+			m.TopicPartition.Partition,
+			m.TopicPartition.Offset,
+			time.Now())
+		return m, nil
 	default:
-		fmt.Printf("unknown format: %v", m)
+		return nil, fmt.Errorf("unknown format: %v", m)
 	}
-
-	return nil
 }

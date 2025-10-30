@@ -7,8 +7,13 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
+type KafkaReciever interface {
+	Receive(msg *kafka.Message)
+}
+
 type KafkaConsumer struct {
 	consumer *kafka.Consumer
+	handlers map[string]KafkaReciever
 }
 
 func NewKafkaConsumer(conf *kafka.ConfigMap) *KafkaConsumer {
@@ -18,7 +23,12 @@ func NewKafkaConsumer(conf *kafka.ConfigMap) *KafkaConsumer {
 	}
 	return &KafkaConsumer{
 		consumer: c,
+		handlers: map[string]KafkaReciever{},
 	}
+}
+
+func (c *KafkaConsumer) SubscribeTopics(topicName string, reciever KafkaReciever) {
+	c.handlers[topicName] = reciever
 }
 
 func (c *KafkaConsumer) Listen(ctx context.Context, topics []string) error {
@@ -28,10 +38,19 @@ func (c *KafkaConsumer) Listen(ctx context.Context, topics []string) error {
 	}
 
 	for {
-		event := c.consumer.Poll(1000)
+		event := c.consumer.Poll(500)
+		if event == nil {
+			continue
+		}
 		switch e := event.(type) {
 		case *kafka.Message:
-			fmt.Println(e)
+			handler, ok := c.handlers[*e.TopicPartition.Topic]
+			if !ok {
+				fmt.Printf("error unknown handlers: %s\n", *e.TopicPartition.Topic)
+				continue
+			}
+			handler.Receive(e)
+
 			_, err = c.consumer.CommitMessage(e)
 			if err != nil {
 				fmt.Printf("error commit message: %v\n", err)
