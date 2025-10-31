@@ -38,7 +38,7 @@ func (c *KafkaConsumer) Listen(ctx context.Context, topics []string) error {
 	}
 
 	for {
-		event := c.consumer.Poll(500)
+		event := c.consumer.Poll(100)
 		if event == nil {
 			continue
 		}
