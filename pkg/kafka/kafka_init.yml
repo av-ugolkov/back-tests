@@ -13,8 +13,8 @@ services:
       kafka-topics --bootstrap-server kafka-broker-1:9092 --topic kafka-test-response --delete --if-exists
       
       echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka-broker-1:9092 --create --if-not-exists --topic kafka-test-request --replication-factor 1 --partitions 1
-      kafka-topics --bootstrap-server kafka-broker-1:9092 --create --if-not-exists --topic kafka-test-response --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka-broker-1:9092 --create --if-not-exists --topic kafka-test-request --replication-factor 3 --partitions 3
+      kafka-topics --bootstrap-server kafka-broker-1:9092 --create --if-not-exists --topic kafka-test-response --replication-factor 3 --partitions 3
 
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka-broker-1:9092 --list
