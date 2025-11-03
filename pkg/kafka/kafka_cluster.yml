@@ -36,7 +36,7 @@ services:
       - backend-examples
   kafka-broker-2:
     image: confluentinc/cp-kafka:${KAFKA_VERSION}
-    hostname: kafka-broker-1
+    hostname: kafka-broker-2
     ports:
       - "29092:29092"
     environment:
