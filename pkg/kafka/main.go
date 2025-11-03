@@ -12,7 +12,7 @@ const topicName = "kafka-test-request"
 
 func main() {
 	cfgProducer := kafka.ConfigMap{
-		"bootstrap.servers":      "localhost:19092",
+		"bootstrap.servers":      "localhost:19092,localhost:29092,localhost:39092",
 		"client.id":              "backend-examples",
 		"acks":                   "all",
 		"linger.ms":              0,
@@ -22,7 +22,7 @@ func main() {
 	producer := NewKafkaProducer(&cfgProducer)
 
 	cfgConsumer := kafka.ConfigMap{
-		"bootstrap.servers":  "localhost:19092",
+		"bootstrap.servers":  "localhost:19092,localhost:29092,localhost:39092",
 		"group.id":           "backend-examples",
 		"auto.offset.reset":  "earliest",
 		"enable.auto.commit": false,
