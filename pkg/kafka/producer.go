@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -14,18 +15,34 @@ type KafkaProducer struct {
 func NewKafkaProducer(conf *kafka.ConfigMap) *KafkaProducer {
 	p, err := kafka.NewProducer(conf)
 	if err != nil {
-		return nil
+		log.Fatal(err)
 	}
+
+	go func() {
+		for e := range p.Events() {
+			switch ev := e.(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+				} else {
+					fmt.Printf("Delivered key=%s value=%s topic=%s partition=%d offset=%d time=%v\n",
+						string(ev.Key),
+						string(ev.Value),
+						*ev.TopicPartition.Topic,
+						ev.TopicPartition.Partition,
+						ev.TopicPartition.Offset,
+						time.Now().Format(time.TimeOnly))
+				}
+			}
+		}
+	}()
 
 	return &KafkaProducer{
 		producer: p,
 	}
 }
 
-func (p *KafkaProducer) Send(topic string, key []byte, value []byte) (*kafka.Message, error) {
-	deliveryChan := make(chan kafka.Event, 1)
-	defer close(deliveryChan)
-
+func (p *KafkaProducer) Send(topic string, key []byte, value []byte) error {
 	err := p.producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{
 			Topic:     &topic,
@@ -33,23 +50,14 @@ func (p *KafkaProducer) Send(topic string, key []byte, value []byte) (*kafka.Mes
 		},
 		Key:   key,
 		Value: value,
-	}, deliveryChan)
+	}, nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	event := <-deliveryChan
-	switch m := event.(type) {
-	case *kafka.Message:
-		fmt.Printf("Sender: key=%s value=%s topic=%s partition=%d offset=%d time=%v\n",
-			string(m.Key),
-			string(m.Value),
-			*m.TopicPartition.Topic,
-			m.TopicPartition.Partition,
-			m.TopicPartition.Offset,
-			time.Now())
-		return m, nil
-	default:
-		return nil, fmt.Errorf("unknown format: %v", m)
-	}
+	return nil
+}
+func (p *KafkaProducer) Close() {
+	p.producer.Flush(5000)
+	p.producer.Close()
 }
