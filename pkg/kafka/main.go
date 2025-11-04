@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -16,8 +17,8 @@ func main() {
 		"client.id":              "backend-examples",
 		"acks":                   "all",
 		"linger.ms":              0,
-		"batch.num.messages":     5,
-		"queue.buffering.max.ms": 1,
+		"batch.num.messages":     1,
+		"queue.buffering.max.ms": 0,
 	}
 	producer := NewKafkaProducer(&cfgProducer)
 
@@ -44,11 +45,12 @@ func main() {
 
 	for i := 1; i <= 5; i++ {
 		wg.Add(1)
-		_, err := producer.Send(topicName, []byte(fmt.Sprintf("key-%d", i)), []byte(fmt.Sprintf("value-%d", i)))
+		err := producer.Send(topicName, []byte(fmt.Sprintf("key-%d", i)), []byte(fmt.Sprintf("value-%v", time.Now().Format(time.DateTime))))
 		if err != nil {
 			fmt.Printf("error producer send: %v\n", err)
 		}
 	}
+	producer.Close()
 
 	wg.Wait()
 }

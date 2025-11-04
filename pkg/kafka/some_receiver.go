@@ -27,6 +27,6 @@ func (r *Receiver) Receive(msg *kafka.Message) {
 		*msg.TopicPartition.Topic,
 		msg.TopicPartition.Partition,
 		msg.TopicPartition.Offset,
-		time.Now())
+		time.Now().Format(time.TimeOnly))
 	r.wg.Done()
 }
