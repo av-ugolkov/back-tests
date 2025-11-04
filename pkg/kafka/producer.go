@@ -25,10 +25,9 @@ func NewKafkaProducer(conf *kafka.ConfigMap) *KafkaProducer {
 				if ev.TopicPartition.Error != nil {
 					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
 				} else {
-					fmt.Printf("Delivered key=%s value=%s topic=%s partition=%d offset=%d time=%v\n",
+					fmt.Printf("Delivered key=%s value=%s partition=%d offset=%d time=%v\n",
 						string(ev.Key),
 						string(ev.Value),
-						*ev.TopicPartition.Topic,
 						ev.TopicPartition.Partition,
 						ev.TopicPartition.Offset,
 						time.Now().Format(time.TimeOnly))
@@ -58,6 +57,6 @@ func (p *KafkaProducer) Send(topic string, key []byte, value []byte) error {
 	return nil
 }
 func (p *KafkaProducer) Close() {
-	p.producer.Flush(5000)
+	p.producer.Flush(10000)
 	p.producer.Close()
 }

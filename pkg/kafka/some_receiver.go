@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -11,22 +10,17 @@ import (
 var _ KafkaReciever = (*Receiver)(nil)
 
 type Receiver struct {
-	wg *sync.WaitGroup
 }
 
-func NewReceiver(wg *sync.WaitGroup) *Receiver {
-	return &Receiver{
-		wg: wg,
-	}
+func NewReceiver() *Receiver {
+	return &Receiver{}
 }
 
 func (r *Receiver) Receive(msg *kafka.Message) {
-	fmt.Printf("Received: key=%s value=%s topic=%s partition=%d offset=%d time=%v\n",
+	fmt.Printf("Received: key=%s value=%s partition=%d offset=%d time=%v\n",
 		string(msg.Key),
 		string(msg.Value),
-		*msg.TopicPartition.Topic,
 		msg.TopicPartition.Partition,
 		msg.TopicPartition.Offset,
 		time.Now().Format(time.TimeOnly))
-	r.wg.Done()
 }

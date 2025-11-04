@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"sync"
+	"math/rand/v2"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -30,12 +33,15 @@ func main() {
 	}
 	consumer := NewKafkaConsumer(&cfgConsumer)
 
-	var wg sync.WaitGroup
-	r := NewReceiver(&wg)
+	r := NewReceiver()
 	consumer.SubscribeTopics(topicName, r)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
 		err := consumer.Listen(ctx, []string{topicName})
 		if err != nil {
@@ -43,14 +49,24 @@ func main() {
 		}
 	}()
 
-	for i := 1; i <= 5; i++ {
-		wg.Add(1)
-		err := producer.Send(topicName, []byte(fmt.Sprintf("key-%d", i)), []byte(fmt.Sprintf("value-%v", time.Now().Format(time.DateTime))))
-		if err != nil {
-			fmt.Printf("error producer send: %v\n", err)
+	var close bool
+	go func() {
+		for !close {
+			ind := time.Now().Unix()
+			err := producer.Send(topicName, []byte(fmt.Sprintf("%d", ind)), []byte(fmt.Sprintf("%v", time.Now().Format(time.DateTime))))
+			if err != nil {
+				fmt.Printf("error producer send: %v\n", err)
+			}
+			wait := rand.IntN(2500) + 500
+			time.Sleep(time.Duration(wait) * time.Millisecond)
 		}
-	}
-	producer.Close()
+		producer.Close()
+	}()
 
-	wg.Wait()
+	sig := <-sigchan
+	fmt.Printf("caught signal [%v]: terminating\n", sig)
+	close = true
+	time.Sleep(3 * time.Second)
+	consumer.Close()
+	time.Sleep(3 * time.Second)
 }
