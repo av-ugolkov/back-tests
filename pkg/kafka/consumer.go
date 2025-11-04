@@ -42,20 +42,23 @@ func (c *KafkaConsumer) Listen(ctx context.Context, topics []string) error {
 	}
 
 	for !c.close {
-		msg, err := c.consumer.ReadMessage(100)
-		if err != nil {
-			continue
-		}
-		handler, ok := c.handlers[*msg.TopicPartition.Topic]
-		if !ok {
-			fmt.Printf("error unknown handlers: %s\n", *msg.TopicPartition.Topic)
-			continue
-		}
-		handler.Receive(msg)
+		event := c.consumer.Poll(100)
+		switch e := event.(type) {
+		case *kafka.Message:
+			handler, ok := c.handlers[*e.TopicPartition.Topic]
+			if !ok {
+				fmt.Printf("error unknown handlers: %s\n", *e.TopicPartition.Topic)
+				continue
+			}
+			handler.Receive(e)
 
-		_, err = c.consumer.CommitMessage(msg)
-		if err != nil {
-			fmt.Printf("error commit message: %v\n", err)
+			_, err = c.consumer.CommitMessage(e)
+			if err != nil {
+				fmt.Printf("error commit message: %v\n", err)
+			}
+		case kafka.Error:
+			fmt.Printf("error: %v\n", e)
+		default:
 		}
 
 		select {
