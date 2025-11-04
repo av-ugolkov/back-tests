@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
@@ -19,8 +20,9 @@ type KafkaConsumer struct {
 func NewKafkaConsumer(conf *kafka.ConfigMap) *KafkaConsumer {
 	c, err := kafka.NewConsumer(conf)
 	if err != nil {
-		return nil
+		log.Fatal(err)
 	}
+
 	return &KafkaConsumer{
 		consumer: c,
 		handlers: map[string]KafkaReciever{},
@@ -32,6 +34,7 @@ func (c *KafkaConsumer) SubscribeTopics(topicName string, reciever KafkaReciever
 }
 
 func (c *KafkaConsumer) Listen(ctx context.Context, topics []string) error {
+	c.consumer.Unsubscribe()
 	err := c.consumer.SubscribeTopics(topics, nil)
 	if err != nil {
 		return err
