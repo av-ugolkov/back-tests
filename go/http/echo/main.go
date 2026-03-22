@@ -15,7 +15,7 @@ type BindFile struct {
 func main() {
 	router := echo.New()
 	router.Static("/", "./public")
-	router.GET("/download", echo.HandlerFunc(bindFile), middleware)
+	router.GET("/download", bindFile, middleware)
 	if err := http.ListenAndServe(":8080", router); err != nil {
 		panic(err)
 	}
@@ -28,12 +28,11 @@ func bindFile(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, err)
 	}
 
-	return c.String(http.StatusOK, fmt.Sprintf("File uploaded successfully."))
+	return c.String(http.StatusOK, fmt.Sprintf("File downloaded successfully."))
 }
 
 func middleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		fmt.Printf("some code")
 		return next(c)
 	}
 }
